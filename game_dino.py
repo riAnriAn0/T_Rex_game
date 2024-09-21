@@ -7,18 +7,14 @@ from sys import exit
 pygame.init()
 pygame.font.init()
 
+MELHOR_PONTUACAO = 0
 IMAGEM_OVER = pygame.image.load(os.path.join('img','game_over.png'))
-IMAGEM_RETURN = pygame.transform.scale2x(pygame.image.load(os.path.join('img','return.png')))
 IMAGEM_DINO = pygame.image.load(os.path.join('img','dino.png'))
+IMAGEM_DINO_REBAIXADO = pygame.image.load(os.path.join('img','dino_rebaixado.png'))
 IMAGEM_CHAO = pygame.image.load(os.path.join('img','chao.png'))
 IMAGEM_NUVEM =  pygame.image.load(os.path.join('img','nuvem.png'))
-FONTE_PONTOS = pygame.font.SysFont(os.path.join('fonts','PressStart2P-Regular.ttf') , 20)
-IMAGEMS_CACTOS = [
-    pygame.image.load(os.path.join('img','cactos1.png')),
-    pygame.image.load(os.path.join('img','cactos2.png')),
-    pygame.image.load(os.path.join('img','cactos3.png')),
-    pygame.image.load(os.path.join('img','cactos4.png'))
-]
+IMAGEM_CACTO = pygame.image.load(os.path.join('img','cacto.png'))
+FONTE_PONTOS = pygame.font.SysFont(os.path.join('fonts','PressStart2P-Regular.ttf') , 30)
 
 class Over:
 
@@ -34,34 +30,19 @@ class Over:
     def desenhar(self, tela):
         tela.blit(self.imagem, (self.x,self.y))
 
-class Return:
-
-    IMAGEM = IMAGEM_RETURN
-
-    def __init__(self):
-        self.x = 600 - (self.IMAGEM.get_width() / 2)
-        self.y = 225
-        self.imagem = self.IMAGEM
-        self.sprite_width = self.IMAGEM.get_width()
-        self.sprite_height = self.IMAGEM.get_height()
-
-    def desenhar(self, tela):
-        tela.blit(self.imagem, (self.x,self.y))
-
 class Chao:
 
     IMAGEM = IMAGEM_CHAO
-    VELOCIDADE = 30
     FRAME_X = 0
     FRAME_Y = 0
 
     def __init__(self):
         self.imagem = self.IMAGEM
         self.x = 0
-        self.y = 300
+        self.y = 340
         self.x_2 = 1200
-        self.y_2 = 300
-        self.velocidade = self.VELOCIDADE
+        self.y_2 = 340
+        self.velocidade = 30
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
 
@@ -69,10 +50,10 @@ class Chao:
         self.x -= self.velocidade
         self.x_2 -= self.velocidade
 
-        if self.x == -1200:
+        if self.x < -1200:
             self.x = 1200
 
-        if self.x_2 == -1200:
+        if self.x_2 < -1200:
             self.x_2 = 1200
     
     def desenhar(self, tela):
@@ -82,62 +63,49 @@ class Chao:
 class Nuvem:
 
     IMAGEM = IMAGEM_NUVEM
-    VELOCIDADE = 5
     FRAME_X = 0
     FRAME_Y = 0
 
-    def __init__(self):
+    def __init__(self, y):
         self.imagem = self.IMAGEM
-        self.x = 500
-        self.y = 250
-        self.velocidade = self.VELOCIDADE
+        self.x = 1100
+        self.y = y
+        self.velocidade = 1
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
+        self.passou = False
 
     def animacao(self):
         self.x -= self.velocidade
+        if self.x < -50:
+            self.passou = True
 
-        if self.x == -50:
-            self.x = 1000 #????????
     def desenhar(self, tela):
         tela.blit( self.imagem,(self.x, self.y))
 
 
 class Cactos:
 
-    IMAGEMS = IMAGEMS_CACTOS
-    VELOCIDADE = 40
+    IMAGEM = IMAGEM_CACTO
     SPRITE_WIDTH = 25
     SPRITE_HEIGHT = 47
     FRAME_X = 0
     FRAME_Y = 0
 
-    def __init__(self):
-        self.x = 1250
-        self.y = 265  
-        self.imagem = self.random_image()
-        self.velocidade = self.VELOCIDADE
-        self.sprite_width = self.imagem.get_width()
-        self.sprite_height = self.imagem.get_height()
+    def __init__(self, x):
+        self.x = x
+        self.y = 275  
+        self.imagem = self.IMAGEM
+        self.velocidade = 40
+        self.sprite_width = self.IMAGEM.get_width()
+        self.sprite_height = self.IMAGEM.get_height()
         self.passou = False
-
-    def random_image(self):
-        num = random.randrange(1,10)
-
-        if num <= 4:
-            return self.IMAGEMS[0]
-        elif num >= 5 and num <=7:
-            return self.IMAGEMS[1]
-        elif num == 8 or num == 9:
-            return self.IMAGEMS[2]
-        else:
-            return self.IMAGEMS[3]
 
     def animacao(self):
 
         self.x -= self.velocidade
-        if self.x < 0:
-            self.x = 1200
+        if self.x < 10:
+            self.passou = True
     
     def mask(self):
         return pygame.mask.from_surface(self.imagem)
@@ -148,18 +116,19 @@ class Cactos:
 class Dino:
 
     IMAGEM = IMAGEM_DINO
-    FRAME_X = 44
-    FRAME_Y = 47
+    IMAGEM_REBAIXADO = IMAGEM_DINO_REBAIXADO
+    FRAME_X = 87.5
+    FRAME_Y = 94
 
     def __init__(self):
-        self.x = 250
+        self.x = 150
         self.y = 265
         self.imagem = self.IMAGEM
         self.sprite_atual = 1
-        self.sprite_width = 44
-        self.sprite_height = 47
-        self.velocidade = 0
-        self.gravidade = 5
+        self.sprite_width = self.IMAGEM.get_width()
+        self.sprite_height = self.IMAGEM.get_height()
+        self.velocidade = 2
+        self.gravidade = 3.5
         self.pulando = False
         self.colidir = False
 
@@ -178,18 +147,17 @@ class Dino:
     def pular(self):
 
         if not self.pulando:
-            self.velocidade = -25
+            self.y -= 160 
             self.pulando = True
-        
-        if self.pulando:
-            self.y += self.velocidade
-            self.velocidade += self.gravidade
 
-            if self.y >= 265:
-                self.y = 265
-                self.velocidade = 0
-                self.pulando = False
-    
+        if self.y < 270:
+                self.y += self.velocidade
+                self.velocidade += self.gravidade
+                if self.y > 265:
+                    self.y = 265
+                    self.pulando = False
+                    self.velocidade = 0
+                    
     def mask(self):
         frame_x = self.sprite_atual * self.FRAME_X  
         dino_frame_surface = self.imagem.subsurface((frame_x, 0, self.FRAME_X, self.FRAME_Y))
@@ -208,6 +176,8 @@ class Dino:
 
 
 def main():
+    global MELHOR_PONTUACAO
+
     DISPLAY_WIDTH = 1200
     DIPLAY_HEIGHT = 500
 
@@ -216,16 +186,15 @@ def main():
     rodando = True
     pontos = 0
     game_over = Over()
-    retornar = Return()
     chao = Chao()
-    nuvem = Nuvem()
-    cactos = [Cactos()]
+    nuvens = [Nuvem(0)]
+    cactos = [Cactos(0)]
     dino = Dino()
     primeiro_cacto = True
 
     while rodando:
     
-        clock.tick(15) 
+        clock.tick(18) 
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -233,54 +202,73 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:    
                     dino.pular()
+                if event.key == pygame.K_r and dino.colidir:
+                    main() 
 
         if dino.pulando:
             dino.pular()
         
         display.fill((247,247,247))
 
-        texto = FONTE_PONTOS.render(f"SCORE {pontos}", 0,(83,83,83))
+        texto = FONTE_PONTOS.render(f"SCORE: {pontos}", 0,(83,83,83))
+        texto_mpv = FONTE_PONTOS.render(f"MVP: {MELHOR_PONTUACAO}", 0,(166,166,166))
         display.blit(texto,(1000 , 100))
+        display.blit(texto_mpv,(900 , 100))
         
+        if len(nuvens) == 0 or len(nuvens) < 2:
+            y = random.randrange(50,200,10)
+            nuvens.append(Nuvem(y - 10))
 
         if primeiro_cacto:
-            cactos.append(Cactos())
+            cactos.append(Cactos(1400))
             primeiro_cacto = False
 
-        if cactos[0].x < 800 and len(cactos) < 2:
-            cactos.append(Cactos())
+        if cactos[0].x < 500 and len(cactos) < 3:
+            x = random.randrange(1400,1600,100)
+            cactos.append(Cactos(x))
            
         for cacto in cactos:
-            dino.colisao(cacto)          
+            dino.colisao(cacto) 
+
         if not dino.colidir:
             for cacto in cactos:
-                chao.animacao()
-                nuvem.animacao()
                 cacto.animacao()
-
-        for cacto in cactos:
-            if cacto.x < 100:
-                cacto.passou = True
+            for nuvem in nuvens:
+                nuvem.animacao()
+            chao.animacao()
 
         chao.desenhar(display)
-        nuvem.desenhar(display)
         dino.desenhar(display)
+
+        for nuvem in nuvens:
+            nuvem.desenhar(display)
+
         for cacto in cactos:
             cacto.desenhar(display)
         
         for i,cacto in enumerate(cactos):
             if cacto.passou:
                 cactos.pop(i)
+        
+        for i,nuven in enumerate(nuvens):
+            if nuven.passou:
+                nuvens.pop(i)
 
         if not dino.colidir:
             pontos += 1
             if pontos % 100 == 0:
-                chao.VELOCIDADE += 5
+                chao.velocidade += 5
                 for cacto in cactos:
                     cacto.velocidade += 5
+
+        retornar = FONTE_PONTOS.render(f"Precione r para reiniciar", 0,(64,64,64))
+
         if dino.colidir:
+            if pontos > MELHOR_PONTUACAO:
+                MELHOR_PONTUACAO = pontos
             game_over.desenhar(display)
-            retornar.desenhar(display)
+            display.blit(retornar,( 500 ,240))
+
         
         pygame.display.flip()
 
