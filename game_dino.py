@@ -43,7 +43,7 @@ class Chao:
         self.y = 340
         self.x_2 = 1200
         self.y_2 = 340
-        self.velocidade = 30
+        self.velocidade = 20
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
 
@@ -78,7 +78,7 @@ class Nuvem:
 
     def animacao(self):
         self.x -= self.velocidade
-        if self.x < -50:
+        if self.x < -5:
             self.passou = True
 
     def desenhar(self, tela):
@@ -97,7 +97,7 @@ class Cactos:
         self.x = x
         self.y = 275  
         self.imagem = self.IMAGEM
-        self.velocidade = 35
+        self.velocidade = 25
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
         self.passou = False
@@ -126,7 +126,7 @@ class Aves:
         self.x = x
         self.y = 200
         self.imagem = self.IMAGEM
-        self.velocidade = 35
+        self.velocidade = 30
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
         self.sprite_atual = 1
@@ -134,7 +134,7 @@ class Aves:
 
     def animacao(self):
         self.x -= self.velocidade
-        if self.x < -100:
+        if self.x < 5:
             self.passou = True
     
     def mask(self):
@@ -159,8 +159,8 @@ class Dino:
         self.sprite_atual = 1
         self.sprite_width = self.IMAGEM.get_width()
         self.sprite_height = self.IMAGEM.get_height()
-        self.velocidade = 2
-        self.gravidade = 3.5
+        self.velocidade = 3
+        self.gravidade = 3
         self.pulando = False
         self.colidir = False
         self.abaixar = False
@@ -189,9 +189,9 @@ class Dino:
 
     def pular(self):
 
-        if not self.pulando:
-            self.y -= 160 
+        if  not self.pulando:
             self.pulando = True
+            self.y -= 170 
 
         if self.y < 270:
                 self.y += self.velocidade
@@ -220,8 +220,8 @@ class Dino:
             self.colidir = True
 
 def desenhar(tela, chao, nuvens, cactos, aves, dino, pontos):
-    texto = FONTE_PONTOS.render(f"SCORE: {pontos}", 0,(83,83,83))
-    texto_mpv = FONTE_PONTOS.render(f"MVP: {MELHOR_PONTUACAO}", 0,(166,166,166))
+    texto = FONTE_PONTOS.render(f"{pontos}", 0,(83,83,83))
+    texto_mpv = FONTE_PONTOS.render(f"HI {MELHOR_PONTUACAO}", 0,(166,166,166))
 
     tela.blit(texto,(1000 , 100))
     tela.blit(texto_mpv,(900 , 100))
@@ -254,7 +254,7 @@ def retornar(display, game_over, dino, pontos):
 
     if dino.colidir:
         game_over.desenhar(display)
-        display.blit(retorne,( 500 ,240))
+        display.blit(retorne,( 470 ,240))
         if pontos > MELHOR_PONTUACAO:
             MELHOR_PONTUACAO = pontos
 
@@ -306,27 +306,18 @@ def main():
             nuvens.append(Nuvem(x, y - 10))
 
         num = random.randrange(0,10,1)
-
-        if num <= 7 :
-            if len(cactos) > 0:
-                if cactos[0].x < 600:
-                    if len(aves) > 0 :
-                        dist_a = aves[0].x
-                        cactos.append(Cactos(dist_a + 600))
-                    else:    
-                        x_c = random.choice((50,100))
-                        cactos.append(Cactos(1100 + x_c))
-        else:
-            if  len(aves) > 0: 
-                if aves[0].x < 500:
-                    if len(cactos) > 0:
-                        dist_c = cactos[0].x
-                        aves.append(Aves( dist_c + 600 ))
-                    else:
-                        x_a = random.choice((0,100,200))
-                        aves.append(Aves(x_a + 1400))
+        d = random.choice((1,2))
+        if  len(aves) == 0 and len(cactos) == 0:
+            if num <= 9 :
+                if d == 1:
+                    cactos.append(Cactos(1200))
+                else: 
+                    cactos.append(Cactos(1200))
+                    cactos.append(Cactos(1250))
+            
+            else:
+                aves.append(Aves(1300)) 
         
-
         desenhar(display,chao, nuvens, cactos, aves, dino, pontos)
            
         for cacto in cactos:
@@ -350,9 +341,9 @@ def main():
         if not dino.colidir:
             pontos += 1
         if pontos % 100 == 0:
-            chao.velocidade += 5
+            chao.velocidade += 10
             for cacto in cactos:
-                cacto.velocidade  += 5 
+                cacto.velocidade  += 10
 
         retornar(display, game_over, dino, pontos)
         
